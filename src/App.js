@@ -33,7 +33,7 @@ function App() {
       if (networkData) {
         const token = new web3.eth.Contract(Joker.abi, networkData.address);
         let balance = await token.methods.balanceOf(accounts[0]).call();
-        setBalance(balance.totring());
+        setBalance(balance.toString());
       } else {
         window.alert('Token is not deployeted');
       }
@@ -48,7 +48,20 @@ function App() {
   }, [web3]);
   
   const transferTokens = async (recipient, amount) => {
-    
+    const networkId = await web3.eth.net.getId();
+    const networkData = Joker.networks[networkId];
+
+    if (networkData) {
+      const token = new web3.eth.Contract(Joker.abi, networkData.address );
+      await token.methods.transfer(
+        recipient, web3.utils.toWei(amount, "ether")
+      ).send({from: account});
+
+      let balance = await token.methods.balanceOf(account).call();
+      setBalance(balance.toString());
+    } else {
+      window.alert('Error');
+    }
   }
 
   return (
@@ -75,10 +88,11 @@ function App() {
           <div>
             <label>Total:</label>
 
-            <input type="text" value={amount}
+            <input type="number" value={amount}
               onChange={(e) => setAmount(e.target.value)}
             ></input>
           </div>
+          <button type="submit">Push</button>
         </form>
       </header>
     </div>
